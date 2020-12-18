@@ -8,6 +8,7 @@
  2. windows系统下的截图功能；
  3. 自动启动应用程序功能
 """
+import os
 import threading
 import time
 import win32api
@@ -17,6 +18,8 @@ import cv2
 import numpy as np
 from PIL import ImageGrab, ImageChops, Image
 from pywinauto.application import Application
+
+from img_similarity import aHash, cmpHash, dHash, pHash, classify_hist_with_split, calculate
 
 is_stop = False
 
@@ -46,9 +49,35 @@ class AutoCmpPics(threading.Thread):
             time.sleep(1)
             next_file = "./pics/%s.jpg" % i
             self.window_capture_pil(next_file)
+            img1, img2 = cv2.imread(pic_base_file), cv2.imread(next_file)
+            # #########################相似计算
+            hash1 = aHash(img1)
+            hash2 = aHash(img2)
+            n1 = cmpHash(hash1, hash2)
+            print('均值哈希算法相似度aHash：', n1)
+
+            hash1 = dHash(img1)
+            hash2 = dHash(img2)
+            n2 = cmpHash(hash1, hash2)
+            print('差值哈希算法相似度dHash：', n2)
+
+            hash1 = pHash(img1)
+            hash2 = pHash(img2)
+            n3 = cmpHash(hash1, hash2)
+            print('感知哈希算法相似度pHash：', n3)
+
+            n4 = classify_hist_with_split(img1, img2)
+            print('三直方图算法相似度：', n4)
+
+            n5 = calculate(img1, img2)
+            print("单通道的直方图", n5)
+            # sim = img_similarity(pic_base_file, next_file)
+            ##############
+
             diff = ImageChops.difference(Image.open(pic_base_file), Image.open(next_file))
             if diff.getbbox():
-                diff.save("./pics/diff_%s.png" % (i))
+                diff.save("./pics/diff_%s_%s_%s_%s_%s_%s_%s.png" % (
+                    os.path.split(pic_base_file)[-1].replace(".jpg", ""), i, n1, n2, n3, n4, n5))
             pic_base_file = next_file
 
             if is_stop:
@@ -80,10 +109,10 @@ class AutoAvi(threading.Thread):
 
 
 if __name__ == '__main__':
-    # 启动自动录屏
-    avi_thread = AutoAvi()
-    avi_thread.setDaemon(True)
-    avi_thread.start()
+    # # 启动自动录屏
+    # avi_thread = AutoAvi()
+    # avi_thread.setDaemon(True)
+    # avi_thread.start()
 
     # 启动屏幕变化检测
     pic_thread = AutoCmpPics()
@@ -94,10 +123,10 @@ if __name__ == '__main__':
     # 自动操作记事本
     app = Application().start('notepad.exe')
     time.sleep(1)
-    app[' 无标题 - 记事本 '].menu_select("编辑(&E) -> 替换(&R)..")
-    time.sleep(1)
-    app['替换'].取消.click()
-    time.sleep(1)
+    # app[' 无标题 - 记事本 '].menu_select("编辑(&E) -> 替换(&R)..")
+    # time.sleep(1)
+    # app['替换'].取消.click()
+    # time.sleep(1)
     # 没有with_spaces 参数空格将不会被键入。请参阅SendKeys的这个方法的文档，因为它是SendKeys周围的薄包装。
     app[' 无标题 - 记事本 '].Edit.type_keys("来自python程序的自动输入：你好，世界！！！", with_spaces=True)
     time.sleep(1)
@@ -112,5 +141,5 @@ if __name__ == '__main__':
 
     # 设置结束标记
     is_stop = True
-    avi_thread.join()
+    # avi_thread.join()
     pic_thread.join()
