@@ -14,7 +14,7 @@ import time
 import win32api
 from win32api import GetSystemMetrics
 
-import cv2
+# import cv2
 import numpy as np
 from PIL import ImageGrab, ImageChops, Image
 from pywinauto.application import Application
@@ -109,10 +109,10 @@ class AutoAvi(threading.Thread):
 
 
 if __name__ == '__main__':
-    # # 启动自动录屏
-    # avi_thread = AutoAvi()
-    # avi_thread.setDaemon(True)
-    # avi_thread.start()
+    # 启动自动录屏
+    avi_thread = AutoAvi()
+    avi_thread.setDaemon(True)
+    avi_thread.start()
 
     # 启动屏幕变化检测
     pic_thread = AutoCmpPics()
@@ -141,5 +141,5 @@ if __name__ == '__main__':
 
     # 设置结束标记
     is_stop = True
-    # avi_thread.join()
+    avi_thread.join()
     pic_thread.join()

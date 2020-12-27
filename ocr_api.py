@@ -32,7 +32,6 @@ def get_info(path):
         data = rs["data"]
         # 这里还得需要一个信息显示的排序
         data_tmp = sorted(data["raw_out"], key=lambda x: x[0][1])
-        # print(data_tmp)
         old_v = 0
         h = 0
         row_data = []
