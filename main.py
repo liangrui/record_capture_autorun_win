@@ -11,9 +11,9 @@ import threading
 from pywinauto.application import Application
 import time
 
-from PIL import ImageGrab
-from win32api import GetSystemMetrics
-import numpy as np
+# from PIL import ImageGrab
+# from win32api import GetSystemMetrics
+# import numpy as np
 # import cv2
 import PlayMusic
 from PlayMusic import PalySound
@@ -80,6 +80,8 @@ if __name__ == '__main__':
     pre_count = list1.item_count()
     n_total_count += 1
     print("第%s次刷新，共有%s条记录." % (n_total_count, pre_count))
+    is_flag = True
+    sound_thread = None
     while True:
         time.sleep(2)
         main_app = app["国海证券金探号超级终端V7.00"]
@@ -90,11 +92,11 @@ if __name__ == '__main__':
         print("第%s次刷新，共有%s条记录." % (n_total_count, pre_count))
         if c_count > pre_count:
             print("记录有更新.")
-            sound_thread = PalySound()
-        # sound_thread.setDaemon(True)
+            if sound_thread is not None and sound_thread.is_alive():
+                sound_thread.terminate()
+            sound_thread = PalySound('./sounds/3.wav' if is_flag else './sounds/4.wav')
             sound_thread.start()
-            a = input("请输入任意值继续...")
-            sound_thread.terminate()
+            is_flag = not is_flag
         else:
             print("记录不变.")
         pre_count = c_count
